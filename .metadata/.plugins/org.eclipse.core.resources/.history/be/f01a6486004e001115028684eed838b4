@@ -1,0 +1,9 @@
+package com.example.financeTracker.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.financeTracker.entity.User;
+
+public interface TransactionRepository extends JpaRepository<User, Long> {
+
+}

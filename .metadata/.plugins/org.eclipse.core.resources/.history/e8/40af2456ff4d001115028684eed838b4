@@ -1,0 +1,5 @@
+package com.example.financeTracker.LogTnx.repository;
+
+public class LogTnxRepository {
+
+}

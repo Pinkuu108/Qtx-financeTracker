@@ -1,0 +1,9 @@
+package com.example.financeTracker.LogTnx.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.financeTracker.entity.User;
+
+public interface LogTnxRepository  extends JpaRepository<User, Long>{
+
+}

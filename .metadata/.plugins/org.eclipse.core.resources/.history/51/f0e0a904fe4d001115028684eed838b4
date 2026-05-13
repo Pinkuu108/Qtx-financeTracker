@@ -1,0 +1,24 @@
+package com.example.financeTracker.entity;
+
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Log-Tnx")
+public class LogTnx {
+
+	@JoinColumn(nullable = false)
+    @OneToMany
+    private User user;
+	
+	private double amount;
+	
+	private LocalDateTime transdate;
+	
+	private String transDetailes;
+
+}
