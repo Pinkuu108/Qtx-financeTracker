@@ -1,26 +1,28 @@
 package com.example.financeTracker.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.financeTracker.dto.TransactionRequest;
-import com.example.financeTracker.entity.User;
+import com.example.financeTracker.entity.UserTransaction;
 import com.example.financeTracker.service.TransactionService;
 
 @RestController
+@CrossOrigin("http://localhost:5173")
 public class TransactionController {
 
-	@Autowired
-	private TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
-	@PostMapping("/save")
-	public String saveTransaction(@RequestBody TransactionRequest request) {
+    @PostMapping("/save")
+    public String saveTransaction(@RequestBody TransactionRequest request) {
+        return transactionService.saveTransaction(request);  // ← no hardcoded user
+    }
 
-		User user = new User();
-		user.setId(1);
-		return transactionService.saveTransaction(request, user);
-	}
-
+    @GetMapping("/transactions/{userId}")
+    public List<UserTransaction> getTransactions(@PathVariable("userId") Long userId) {
+        return transactionService.getTransactionsByUser(userId);  // ← history
+    }
 }

@@ -17,41 +17,29 @@ public class UserService {
     private UserRepository userRepository;
 
     public String register(RegisterRequest request) {
-
-        if (userRepository.findByEmail(
-                request.getEmail()).isPresent()) {
-
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return "Email Already Exists";
         }
-
         User user = new User();
-
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
-
         userRepository.save(user);
-
         return "Registration Successful";
     }
 
     public String login(LoginRequest request) {
-
-        Optional<User> optionalUser =
-                userRepository.findByEmail(
-                        request.getEmail()
-                );
-
-        if(optionalUser.isEmpty()) {
-
+    	System.out.println("Login attempt: " + request.getEmail());
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+        System.out.println("Found: " + optionalUser.isPresent());
+        if (optionalUser.isEmpty()) {
             return "User Not Found";
         }
 
         User user = optionalUser.get();
 
-        if(user.getPassword().equals(request.getPassword())) {
-
-            return "Login Success";
+        if (user.getPassword().equals(request.getPassword())) {
+            return "Login Success:" + user.getId();  // ← returns userId
         }
 
         return "Invalid Password";
