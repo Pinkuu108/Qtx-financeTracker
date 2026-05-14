@@ -1,0 +1,43 @@
+package com.example.financeTracker.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.financeTracker.entity.Category;
+import com.example.financeTracker.repository.CategoryRepository;
+import com.example.financeTracker.repository.TransactionRepository;
+
+@Service
+public class CategoryService {
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    public Category addCategory(Category category) {
+        return categoryRepository.save(category);
+    }
+
+    public Category updateCategory(Long id, Category updated) {
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        existing.setName(updated.getName());
+        existing.setIcon(updated.getIcon());
+        return categoryRepository.save(existing);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        transactionRepository.deleteByCategoryId(id); // ✅ delete transactions first
+        categoryRepository.deleteById(id);            // ✅ then delete category
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
+}

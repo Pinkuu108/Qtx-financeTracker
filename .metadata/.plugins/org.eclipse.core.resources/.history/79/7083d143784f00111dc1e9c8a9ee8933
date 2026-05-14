@@ -1,0 +1,31 @@
+package com.example.financeTracker.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.financeTracker.entity.User;
+import com.example.financeTracker.service.AdminService;
+
+@RestController
+@RequestMapping("/admin")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+public class AdminController {
+
+    @Autowired
+    private AdminService adminService;
+
+    // Get all users
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    // Get active user count
+    @GetMapping("/users/active-count")
+    public ResponseEntity<Long> getActiveUserCount() {
+        return ResponseEntity.ok(adminService.getActiveUserCount());
+    }
+}

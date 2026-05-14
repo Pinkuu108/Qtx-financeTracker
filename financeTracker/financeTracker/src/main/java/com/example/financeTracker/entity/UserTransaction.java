@@ -3,6 +3,8 @@ package com.example.financeTracker.entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,6 +29,12 @@ public class UserTransaction {
 	private LocalDateTime transdate;
 
 	private String transDetailes;
+	@Enumerated(EnumType.STRING)
+	private TransactionType type;
+
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private Category category;
 
 	public Long getId() {
 		return id;
@@ -68,6 +76,20 @@ public class UserTransaction {
 		this.transDetailes = transDetailes;
 	}
 	
-	
+	public TransactionType getType() {
+	    return type;
+	}
+
+	public void setType(TransactionType type) {
+	    this.type = type;
+	}
+
+	public Category getCategory() {
+	    return category;
+	}
+
+	public void setCategory(Category category) {
+	    this.category = category;
+	}
 
 }

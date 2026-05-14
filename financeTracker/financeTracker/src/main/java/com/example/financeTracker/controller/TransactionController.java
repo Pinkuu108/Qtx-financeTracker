@@ -3,6 +3,7 @@ package com.example.financeTracker.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.financeTracker.dto.TransactionRequest;
@@ -10,19 +11,19 @@ import com.example.financeTracker.entity.UserTransaction;
 import com.example.financeTracker.service.TransactionService;
 
 @RestController
-@CrossOrigin("http://localhost:5173")
+@RequestMapping("/user")
 public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
 
-    @PostMapping("/save")
-    public String saveTransaction(@RequestBody TransactionRequest request) {
-        return transactionService.saveTransaction(request);  // ← no hardcoded user
+    @PostMapping("/transactions")
+    public ResponseEntity<String> saveTransaction(@RequestBody TransactionRequest request) {
+        return ResponseEntity.ok(transactionService.saveTransaction(request));
     }
 
     @GetMapping("/transactions/{userId}")
-    public List<UserTransaction> getTransactions(@PathVariable("userId") Long userId) {
-        return transactionService.getTransactionsByUser(userId);  // ← history
+    public ResponseEntity<List<UserTransaction>> getTransactions(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(transactionService.getTransactionsByUser(userId));
     }
 }

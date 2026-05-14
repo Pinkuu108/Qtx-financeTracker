@@ -1,0 +1,43 @@
+package com.example.financeTracker.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.financeTracker.entity.Category;
+import com.example.financeTracker.repository.CategoryRepository;
+import com.example.financeTracker.repository.TransactionRepository;
+
+@Service
+public class CategoryService {
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;  // ✅ injected
+
+    public Category addCategory(Category category) {
+        return categoryRepository.save(category);
+    }
+
+    public Category updateCategory(Long id, Category updated) {
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        existing.setName(updated.getName());
+        existing.setIcon(updated.getIcon());
+        return categoryRepository.save(existing);
+    }
+
+    public void deleteCategory(Long id) {
+        if (transactionRepository.existsByCategoryId(id)) {  // ✅ blocks if transactions exist
+            throw new RuntimeException("Cannot delete category: it has existing transactions linked to it.");
+        }
+        categoryRepository.deleteById(id);
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
+}

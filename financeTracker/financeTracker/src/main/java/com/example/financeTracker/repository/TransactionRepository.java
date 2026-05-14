@@ -8,5 +8,7 @@ import com.example.financeTracker.entity.User;
 import com.example.financeTracker.entity.UserTransaction;
 
 public interface TransactionRepository extends JpaRepository<UserTransaction, Long> {
-    List<UserTransaction> findByUser(User user);  // ← added
+    List<UserTransaction> findByUser(User user);
+    boolean existsByCategoryId(Long categoryId);
+    void deleteByCategoryId(Long categoryId); 
 }

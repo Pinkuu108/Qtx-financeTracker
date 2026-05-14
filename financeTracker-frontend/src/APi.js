@@ -1,5 +1,9 @@
-import axios from 'axios';
+// src/Api.js
+import axios from "axios";
 
-const API = axios.create({baseURL: "http://localhost:8080"});
+const API = axios.create({
+  baseURL: "http://localhost:8080",
+  withCredentials: true, 
+});
 
 export default API;

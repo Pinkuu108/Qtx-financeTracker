@@ -1,0 +1,51 @@
+package com.example.financeTracker.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.financeTracker.dto.RegisterRequest;
+import com.example.financeTracker.entity.User;
+import com.example.financeTracker.service.AdminService;
+
+@RestController
+@RequestMapping("/admin")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+public class AdminController {
+
+    @Autowired
+    private AdminService adminService;
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @GetMapping("/users/active-count")
+    public ResponseEntity<Long> getActiveUserCount() {
+        return ResponseEntity.ok(adminService.getActiveUserCount());
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable("id") Long id,          // ✅ added "id"
+            @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(adminService.updateUser(id, request));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(
+            @PathVariable("id") Long id) {         // ✅ added "id"
+        adminService.deleteUser(id);
+        return ResponseEntity.ok("User Deleted Successfully");
+    }
+
+    @PutMapping("/users/{id}/status")
+    public ResponseEntity<String> updateUserStatus(
+            @PathVariable("id") Long id,           // ✅ added "id"
+            @RequestParam("active") boolean active) { // ✅ added "active"
+        return ResponseEntity.ok(adminService.updateUserStatus(id, active));
+    }
+}

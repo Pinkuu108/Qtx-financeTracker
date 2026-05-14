@@ -1,33 +1,76 @@
 package com.example.financeTracker.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.financeTracker.dto.LoginRequest;
 import com.example.financeTracker.dto.RegisterRequest;
 import com.example.financeTracker.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 @RestController
 @RequestMapping("/users")
-@CrossOrigin("http://localhost:5173")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/register")
-    public String register(
-            @RequestBody RegisterRequest request
-    ) {
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-        return userService.register(request);
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(userService.register(request));
     }
 
     @PostMapping("/login")
-    public String login(
-            @RequestBody LoginRequest request
-    ) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request,
+                                         HttpServletRequest httpRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
 
-        return userService.login(request);
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(authentication);
+
+        HttpSession session = httpRequest.getSession(true);
+        session.setAttribute("SPRING_SECURITY_CONTEXT", sc); 
+
+        String principal = authentication.getName(); 
+        String userId = principal.split("::")[1];
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+        return ResponseEntity.ok("Login Success:" + userId + ":" + role);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok("Logout Success");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<String> getCurrentUser() {
+        String principal = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        String email = principal.split("::")[0];
+        return ResponseEntity.ok(email);
+    }
+
+    @PostMapping("/register-admin")
+    public ResponseEntity<String> registerAdmin(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(userService.registerAdmin(request));
     }
 }

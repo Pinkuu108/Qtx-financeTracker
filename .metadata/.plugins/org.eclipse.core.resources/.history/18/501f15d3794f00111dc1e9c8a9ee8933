@@ -1,0 +1,43 @@
+package com.example.financeTracker.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.financeTracker.entity.Category;
+import com.example.financeTracker.service.CategoryService;
+
+@RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+public class CategoryController {
+
+    @Autowired
+    private CategoryService categoryService;
+
+    
+    @PostMapping("/admin/categories")
+    public ResponseEntity<Category> addCategory(@RequestBody Category category) {
+        return ResponseEntity.ok(categoryService.addCategory(category));
+    }
+
+    
+    @PutMapping("/admin/categories/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, category));
+    }
+
+  
+    @DeleteMapping("/admin/categories/{id}")
+    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok("Category Deleted");
+    }
+
+   
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+} 

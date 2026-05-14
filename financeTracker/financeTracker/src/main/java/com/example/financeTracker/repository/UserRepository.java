@@ -9,6 +9,6 @@ import com.example.financeTracker.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	 Optional<User> findByEmail(String email);
 
-	    
+	 Long countByActiveTrue();
 
 }

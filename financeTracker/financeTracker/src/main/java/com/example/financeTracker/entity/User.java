@@ -20,6 +20,24 @@ public class User {
 	private String fullName;
 
 	private String password;
+	private String role; 
+
+	private boolean active = true;
+	public String getRole() {
+	    return role;
+	}
+
+	public void setRole(String role) {
+	    this.role = role;
+	}
+
+	public boolean isActive() {
+	    return active;
+	}
+
+	public void setActive(boolean active) {
+	    this.active = active;
+	}
 
 	public Long getId() {
 		return id;
