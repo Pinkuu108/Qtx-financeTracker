@@ -197,7 +197,7 @@
 ### Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/pinku108/finance-tracker.git
+git clone https://github.com/Pinkuu108/Qtx-financeTracker.git
 
 # Navigate to backend
 cd financeTracker
