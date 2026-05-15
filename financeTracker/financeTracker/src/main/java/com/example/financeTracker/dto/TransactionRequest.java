@@ -9,7 +9,7 @@ public class TransactionRequest {
     private Long userId;
     private double amount;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") // ✅ tells Jackson how to parse the date
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") 
     private LocalDateTime transdate;
 
     private String transDetailes;

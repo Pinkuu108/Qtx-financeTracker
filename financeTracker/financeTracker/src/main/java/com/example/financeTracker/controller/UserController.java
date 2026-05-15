@@ -1,76 +1,71 @@
 package com.example.financeTracker.controller;
 
+import com.example.financeTracker.config.JwtPrincipal;
+import com.example.financeTracker.config.JwtUtil;
+import com.example.financeTracker.dto.LoginRequest;
+import com.example.financeTracker.dto.LoginResponse;
+import com.example.financeTracker.dto.RegisterRequest;
+import com.example.financeTracker.entity.User;
+import com.example.financeTracker.repository.UserRepository;
+import com.example.financeTracker.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import com.example.financeTracker.dto.LoginRequest;
-import com.example.financeTracker.dto.RegisterRequest;
-import com.example.financeTracker.service.UserService;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    @Autowired private UserService userService;
+    @Autowired private AuthenticationManager authenticationManager;
+    @Autowired private JwtUtil jwtUtil;
+    @Autowired private UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(userService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request,
-                                         HttpServletRequest httpRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        // Login is NEVER blocked — active flag does not affect authentication
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(authentication);
+        String principal = authentication.getName();
+        String email     = principal.split("::")[0];
+        Long userId      = Long.parseLong(principal.split("::")[1]);
+        String role      = authentication.getAuthorities().iterator().next().getAuthority();
 
-        HttpSession session = httpRequest.getSession(true);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", sc); 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String principal = authentication.getName(); 
-        String userId = principal.split("::")[1];
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        String token = jwtUtil.generateToken(userId, email, role);
 
-        return ResponseEntity.ok("Login Success:" + userId + ":" + role);
+        // active is included in response — frontend shows warning if false
+        return ResponseEntity.ok(new LoginResponse(token, userId, email, role, user.getFullName(), user.isActive()));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+    public ResponseEntity<String> logout() {
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Logout Success");
+        return ResponseEntity.ok("Logout successful");
     }
 
     @GetMapping("/me")
-    public ResponseEntity<String> getCurrentUser() {
-        String principal = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        String email = principal.split("::")[0];
-        return ResponseEntity.ok(email);
+    public ResponseEntity<String> getCurrentUser(Authentication authentication) {
+        JwtPrincipal principal = (JwtPrincipal) authentication.getPrincipal();
+        return ResponseEntity.ok(principal.email());
     }
 
     @PostMapping("/register-admin")
-    public ResponseEntity<String> registerAdmin(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> registerAdmin(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(userService.registerAdmin(request));
     }
 }
