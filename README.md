@@ -197,7 +197,7 @@
 ### Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/finance-tracker.git
+git clone https://github.com/pinku108/finance-tracker.git
 
 # Navigate to backend
 cd financeTracker
