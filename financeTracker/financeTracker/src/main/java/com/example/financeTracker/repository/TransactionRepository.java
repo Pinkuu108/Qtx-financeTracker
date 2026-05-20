@@ -1,6 +1,6 @@
 package com.example.financeTracker.repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,10 +17,13 @@ public interface TransactionRepository extends JpaRepository<UserTransaction, Lo
     void deleteByCategoryId(Long categoryId);
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM UserTransaction t " +
-           "WHERE t.user.id = :userId " +
-           "AND t.type = 'DEBIT' " +
-           "AND DATE(t.transdate) = :date")
-    Double sumDebitByUserAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+    	       "WHERE t.user.id = :userId " +
+    	       "AND t.type = com.example.financeTracker.entity.TransactionType.DEBIT " +
+    	       "AND t.transdate >= :startOfDay " +
+    	       "AND t.transdate < :endOfDay")
+    	Double sumDebitByUserAndDate(@Param("userId") Long userId,
+    	                              @Param("startOfDay") LocalDateTime startOfDay,
+    	                              @Param("endOfDay") LocalDateTime endOfDay);
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM UserTransaction t " +
            "WHERE t.user.id = :userId " +

@@ -1,0 +1,5 @@
+package com.example.financeTracker.controller;
+
+public class BudgetController {
+
+}

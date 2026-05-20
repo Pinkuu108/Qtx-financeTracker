@@ -1,6 +1,7 @@
 package com.example.financeTracker.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,10 @@ public class BudgetService {
                 .orElseThrow(() -> new RuntimeException("Budget not set up yet"));
 
         LocalDate today = LocalDate.now();
-        double spent = transactionRepository.sumDebitByUserAndDate(userId, today);
+        LocalDateTime startOfDay = today.atStartOfDay();              // 2026-05-20T00:00:00
+        LocalDateTime endOfDay = today.atTime(23, 59, 59);            // 2026-05-20T23:59:59
+
+        double spent = transactionRepository.sumDebitByUserAndDate(userId, startOfDay, endOfDay);
         double dailyLimit = budgeting.getDailyLimit();
         double remaining = dailyLimit - spent;
 

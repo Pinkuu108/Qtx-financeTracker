@@ -1,0 +1,127 @@
+package com.example.financeTracker.service;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.financeTracker.dto.BudgetResponse;
+import com.example.financeTracker.dto.BudgetSetupRequest;
+import com.example.financeTracker.dto.DailyStatusResponse;
+import com.example.financeTracker.dto.MonthlyStatusResponse;
+import com.example.financeTracker.entity.Budgeting;
+import com.example.financeTracker.entity.BudgetingType;
+import com.example.financeTracker.entity.User;
+import com.example.financeTracker.repository.BudgetingRepository;
+import com.example.financeTracker.repository.TransactionRepository;
+import com.example.financeTracker.repository.UserRepository;
+
+@Service
+public class BudgetService {
+
+    private static final int WORKING_DAYS = 30;
+
+    @Autowired
+    private BudgetingRepository budgetingRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    public BudgetResponse setupBudget(Long userId, BudgetSetupRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        double salary = request.getSalary();
+        BudgetingType type = request.getBudgetingType();
+
+        double spendablePct = (type == BudgetingType.FIFTY_THIRTY_TWENTY) ? 0.80 : 0.60;
+        double dailyLimit = (salary * spendablePct) / WORKING_DAYS;
+
+        // upsert — update if exists, create if not
+        Budgeting budgeting = budgetingRepository.findByUserId(userId)
+                .orElse(new Budgeting());
+
+        budgeting.setUser(user);
+        budgeting.setSalary(salary);
+        budgeting.setBudgetingType(type);
+        budgeting.setDailyLimit(dailyLimit);
+        budgetingRepository.save(budgeting);
+
+        return buildBudgetResponse(budgeting);
+    }
+
+    public BudgetResponse getMyBudget(Long userId) {
+        Budgeting budgeting = budgetingRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Budget not set up yet"));
+        return buildBudgetResponse(budgeting);
+    }
+
+    public DailyStatusResponse getDailyStatus(Long userId) {
+        Budgeting budgeting = budgetingRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Budget not set up yet"));
+
+        LocalDate today = LocalDate.now();
+        double spent = transactionRepository.sumDebitByUserAndDate(userId, today);
+        double dailyLimit = budgeting.getDailyLimit();
+        double remaining = dailyLimit - spent;
+
+        DailyStatusResponse response = new DailyStatusResponse();
+        response.setDate(today.format(DateTimeFormatter.ISO_DATE));
+        response.setDailyLimit(dailyLimit);
+        response.setSpent(spent);
+        response.setRemaining(remaining);
+        response.setStatus(spent > dailyLimit ? "EXCEEDED" : "WITHIN");
+        return response;
+    }
+
+    public MonthlyStatusResponse getMonthlyStatus(Long userId) {
+        Budgeting budgeting = budgetingRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Budget not set up yet"));
+
+        LocalDate now = LocalDate.now();
+        double totalSpent = transactionRepository.sumDebitByUserAndMonth(userId, now.getYear(), now.getMonthValue());
+
+        double salary = budgeting.getSalary();
+        BudgetingType type = budgeting.getBudgetingType();
+        double spendablePct = (type == BudgetingType.FIFTY_THIRTY_TWENTY) ? 0.80 : 0.60;
+        double spendableAmount = salary * spendablePct;
+        double savingsAmount = salary - spendableAmount;
+        double remaining = spendableAmount - totalSpent;
+
+        MonthlyStatusResponse response = new MonthlyStatusResponse();
+        response.setMonth(now.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
+        response.setSalary(salary);
+        response.setSpendableAmount(spendableAmount);
+        response.setSavingsAmount(savingsAmount);
+        response.setTotalSpent(totalSpent);
+        response.setRemaining(remaining);
+        response.setStatus(totalSpent > spendableAmount ? "EXCEEDED" : "WITHIN");
+        return response;
+    }
+
+    private BudgetResponse buildBudgetResponse(Budgeting budgeting) {
+        double salary = budgeting.getSalary();
+        BudgetingType type = budgeting.getBudgetingType();
+
+        BudgetResponse response = new BudgetResponse();
+        response.setBudgetingType(type);
+        response.setSalary(salary);
+        response.setDailyLimit(budgeting.getDailyLimit());
+
+        if (type == BudgetingType.FIFTY_THIRTY_TWENTY) {
+            response.setNeedsAmount(salary * 0.50);
+            response.setWantsAmount(salary * 0.30);
+            response.setSavingsAmount(salary * 0.20);
+        } else {
+            response.setNeedsAmount(salary * 0.60);
+            response.setWantsAmount(0);
+            response.setSavingsAmount(salary * 0.40);
+        }
+
+        return response;
+    }
+}
