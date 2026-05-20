@@ -32,13 +32,14 @@ public class ActivationRequestController {
         return ResponseEntity.ok(activationRequestService.getAllRequests());
     }
 
+   
     @PutMapping("/{id}/activate")
-    public ResponseEntity<String> activateUser(@PathVariable Long id) {
+    public ResponseEntity<String> activateUser(@PathVariable("id") Long id) {
         return ResponseEntity.ok(activationRequestService.activateUserFromRequest(id));
     }
 
     @PutMapping("/{id}/ignore")
-    public ResponseEntity<String> ignoreRequest(@PathVariable Long id) {
+    public ResponseEntity<String> ignoreRequest(@PathVariable("id") Long id) {
         return ResponseEntity.ok(activationRequestService.ignoreRequest(id));
     }
 }

@@ -43,7 +43,8 @@ public class ActivationRequestService {
     }
 
     public List<ActivationRequestResponse> getAllRequests() {
-        return activationRequestRepository.findAllByOrderByCreatedAtDesc()
+       
+        return activationRequestRepository.findAllByStatusOrderByCreatedAtDesc(RequestStatus.PENDING)
                 .stream()
                 .map(r -> new ActivationRequestResponse(
                         r.getId(),

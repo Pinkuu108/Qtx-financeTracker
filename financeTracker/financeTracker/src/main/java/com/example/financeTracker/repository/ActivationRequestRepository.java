@@ -18,4 +18,5 @@ public interface ActivationRequestRepository extends JpaRepository<ActivationReq
     long countByStatus(RequestStatus status);
 
     boolean existsByUserAndStatus(User user, RequestStatus status);
+    List<ActivationRequest> findAllByStatusOrderByCreatedAtDesc(RequestStatus status);
 }
